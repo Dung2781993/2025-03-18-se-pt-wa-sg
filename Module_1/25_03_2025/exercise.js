@@ -5,3 +5,7 @@ function checkOddNumber(number) {
         console.log("Number is odd");
     }
 }
+
+function totalSum (a, b) {
+  return a + b;
+}
