@@ -9,3 +9,8 @@ function checkOddNumber(number) {
 function totalSum (a, b) {
   return a + b;
 }
+
+function generateRandomStories(stories) {
+  let randomNumber = Math.random();
+  return stories[randomNumber];
+}
