@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Product Table</title>
+    <style>
+      table {
+        width: 50%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      select {
+        margin-top: 20px;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Product List</h1>
+
+    <!-- Filter Dropdown -->
+    <label for="stock-filter">Filter by Stock:</label>
+    <select id="stock-filter">
+      <option value="all">All</option>
+      <option value="in">In Stock</option>
+      <option value="out">Out of Stock</option>
+    </select>
+    <div id="product-table"></div>
+  </body>
+  <script>
+    const products = [
+      { name: "Laptop", price: 999.99, inStock: true, city: "Melbourne" },
+      { name: "Smartphone", price: 599.49, inStock: false, city: "Perth" },
+      { name: "Keyboard", price: 49.99, inStock: true, city: "Singapore" },
+    ];
+
+    // Step 1: Using createElement to create table
+
+    let productTable = document.getElementById("product-table");
+    let filterSelect = document.getElementById("stock-filter");
+
+    //  Initial table render - default is all option
+    renderTable("all");
+
+    //Handle filter change
+    filterSelect.addEventListener("change", () => {
+      // Make a new function to re-redner the table when the filter change
+      // Reset the table and then populat the new table with filter data
+      renderTable(filterSelect.value);
+    });
+
+    function renderTable(filter) {
+      console.log('Init table');
+
+      // Step 1: Reset the table from the previous action to prevent rendering multiple time
+      productTable.innerHTML = "";
+
+      let table = document.createElement("table");
+
+      // reload the table if we change the option
+      let headerRow = document.createElement("tr");
+
+      // Make a loop to generate the header based on the list of header name
+      const headerList = ["Name", "Price", "In Stock"];
+      for (let i = 0; i < headerList.length; i++) {
+        const header = document.createElement("th");
+        const headerName = headerList[i]; // Get value via index of the array
+        header.textContent = headerName;
+        headerRow.appendChild(header);
+      }
+
+      table.appendChild(headerRow);
+
+      //Step 2: Filter products based on the option of the filter => return the filter Products
+      console.log(filter);
+      
+      // The list of product must be change based on the filter option
+      let filterProduct = [];
+      if (filter === "in") {
+        for (let i = 0 ; i < products.length; i++) {
+          if (products[i].inStock) {
+            filterProduct.push(products[i]);
+          }
+        }
+      }
+      if (filter === "out") {
+        for (let i = 0 ; i < products.length; i++) {
+          if (!products[i].inStock) { // false
+            filterProduct.push(products[i]);
+          }
+        }
+      }
+      if (filter === "all") {
+        filterProduct = products;
+      }
+
+      
+      // Step 3: Add the values or products to the table
+      // Looping through the product list then adding value based on each element
+      for (let i = 0; i < filterProduct.length; i++) {
+        let productRow = document.createElement("tr");
+
+        let productNameCell = document.createElement("td");
+        productNameCell.textContent = filterProduct[i].name;
+
+        let productPriceCell = document.createElement("td");
+        productPriceCell.textContent = filterProduct[i].price;
+
+        let productInStockCell = document.createElement("td");
+        productInStockCell.textContent = filterProduct[i].inStock ? "Yes" : "No";
+
+        productRow.appendChild(productNameCell);
+        productRow.appendChild(productPriceCell);
+        productRow.appendChild(productInStockCell);
+
+        table.appendChild(productRow);
+      }
+
+      // Insert table to the div where id is product-table
+      productTable.appendChild(table);
+    }
+
+    // How can we reload the table if we change the filer option
+  </script>
+</html>
