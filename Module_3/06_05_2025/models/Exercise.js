@@ -22,6 +22,8 @@ class Member extends Person {
   }
 }
 
+// Tech debt
+
 // Librarian class extends Person
 class Librarian extends Person {
   constructor(name, email, employeeId) {
@@ -58,3 +60,6 @@ console.log(librarian.addBook("1984"));
 
 const book = new Book("1984", "George Orwell", 1949);
 console.log(book.getSummary());
+
+
+// Singleton
