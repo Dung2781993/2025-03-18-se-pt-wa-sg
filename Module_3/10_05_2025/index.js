@@ -1,7 +1,10 @@
 import LongTermBook from "./models/LongTermBook.js";
 
-const apiKey = "YYRTmuGHrdxW9AaXsNhXhNhApOa05QAG";
-const apiUrl = `https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=${apiKey}`;
+const apiUrl = `http://localhost:8000/api/books`;
+
+// Before https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=${apiKey} => Try to access in the public api => host by other server
+// After http://localhost:8000/api/books => Calling api locally => hostby own machine => running on localhost
+
 const bookListEl = document.getElementById("book-list");
 const template = document.getElementById("book-template");
 
