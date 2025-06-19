@@ -9,17 +9,23 @@ const {
   sequelize,
 } = require("../models");
 
+const { Op } = require("sequelize");
+
 module.exports = {
   async getPatientAppointments(req, res) {
     try {
       const { id } = req.params;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+
       console.log("Patient ID:", id);
 
       if (!id || isNaN(Number(id))) {
         return res.status(400).json({ error: "Valid patient ID is required" });
       }
 
-      const appointments = await Appointment.findAll({
+      const { count, rows: appointments } = await Appointment.findAndCountAll({
         where: {
           patient_id: id,
           is_deleted: false,
@@ -36,9 +42,16 @@ module.exports = {
           },
         ],
         attributes: ["id", "scheduled_at", "status", "notes"],
+        limit,
+        offset,
       });
 
-      res.json(appointments);
+      res.json({
+        total: count,
+        page,
+        totalPages: Math.ceil(count / limit),
+        appointments,
+      });
     } catch (err) {
       res.status(500).json({
         error: "Failed to retrieve patient appointments",
@@ -67,12 +80,10 @@ module.exports = {
 
       res.json(result);
     } catch (err) {
-      res
-        .status(500)
-        .json({
-          error: "Failed to get appointment services",
-          details: err.message,
-        });
+      res.status(500).json({
+        error: "Failed to get appointment services",
+        details: err.message,
+      });
     }
   },
 
@@ -101,12 +112,10 @@ module.exports = {
       await AppointmentService.bulkCreate(items, { transaction: t });
       await t.commit();
 
-      res
-        .status(201)
-        .json({
-          message: "Appointment created",
-          appointment_id: appointment.id,
-        });
+      res.status(201).json({
+        message: "Appointment created",
+        appointment_id: appointment.id,
+      });
     } catch (err) {
       await t.rollback();
       res
@@ -263,6 +272,68 @@ module.exports = {
     } catch (err) {
       await t.rollback();
       res.status(500).json({ error: err.message });
+    }
+  },
+
+  async searchAppointments(req, res) {
+    try {
+      const { doctorName, status, startDate, endDate } = req.query;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+
+      const where = { is_deleted: false };
+
+      if (status) {
+        where.status = status;
+      }
+
+      if (startDate && endDate) {
+        where.scheduled_at = {
+          [Op.between]: [new Date(startDate), new Date(endDate)],
+        };
+      }
+
+      const doctorFilter = doctorName
+        ? {
+            model: Doctor,
+            attributes: ["id", "name", "specialty"],
+            where: {
+              name: { [Op.like]: `%${doctorName}%` },
+              is_deleted: false,
+            },
+          }
+        : {
+            model: Doctor,
+            attributes: ["id", "name", "specialty"],
+            where: { is_deleted: false },
+          };
+
+      const { count, rows: appointments } = await Appointment.findAndCountAll({
+        where,
+        include: [
+          doctorFilter,
+          {
+            model: Patient,
+            attributes: ["id", "full_name", "dob", "email", "phone"],
+          },
+        ],
+        attributes: ["id", "scheduled_at", "status", "notes"],
+        limit,
+        offset,
+      });
+
+      res.json({
+        total: count,
+        page,
+        totalPages: Math.ceil(count / limit),
+        appointments,
+      });
+    } catch (err) {
+      res.status(500).json({
+        error: "Failed to search appointments",
+        details: err.message,
+      });
     }
   },
 };

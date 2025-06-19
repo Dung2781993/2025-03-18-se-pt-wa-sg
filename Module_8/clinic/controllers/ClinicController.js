@@ -16,4 +16,6 @@ module.exports = {
   cancelAppointment: (req, res) => ClinicService.cancelAppointment(req, res),
   rescheduleAppointment: (req, res) =>
     ClinicService.rescheduleAppointment(req, res),
+  searchAppointments: (req, res) =>
+    ClinicService.searchAppointments(req, res),
 };

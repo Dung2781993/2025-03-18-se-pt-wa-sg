@@ -1,4 +1,3 @@
-// models/index.js
 const { Sequelize, DataTypes } = require("sequelize");
 const config = require("../config/config")["development"];
 
@@ -9,6 +8,9 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
+// Load models
+db.User = require("./user")(sequelize, DataTypes);
+db.RefreshToken = require("./refreshToken")(sequelize, DataTypes);
 db.Patient = require("./patient")(sequelize, DataTypes);
 db.Doctor = require("./doctor")(sequelize, DataTypes);
 db.Appointment = require("./appointment")(sequelize, DataTypes);
@@ -16,7 +18,7 @@ db.Service = require("./service")(sequelize, DataTypes);
 db.AppointmentService = require("./appointmentService")(sequelize, DataTypes);
 db.Invoice = require("./invoice")(sequelize, DataTypes);
 
-// Associations
+// Model Associations
 db.Patient.hasMany(db.Appointment, { foreignKey: "patient_id" });
 db.Appointment.belongsTo(db.Patient, { foreignKey: "patient_id" });
 
@@ -42,5 +44,12 @@ db.AppointmentService.belongsTo(db.Service, { foreignKey: "service_id" });
 
 db.Appointment.hasOne(db.Invoice, { foreignKey: "appointment_id" });
 db.Invoice.belongsTo(db.Appointment, { foreignKey: "appointment_id" });
+
+// New Associations
+db.User.hasOne(db.Doctor, { foreignKey: "user_id", as: "doctorProfile" });
+db.Doctor.belongsTo(db.User, { foreignKey: "user_id", as: "user" });
+
+db.User.hasMany(db.RefreshToken, { foreignKey: "user_id", as: "tokens" });
+db.RefreshToken.belongsTo(db.User, { foreignKey: "user_id", as: "user" });
 
 module.exports = db;

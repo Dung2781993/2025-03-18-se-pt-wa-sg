@@ -3,16 +3,25 @@ const router = express.Router();
 const ClinicController = require("../controllers/ClinicController");
 
 // Get all appointments for a specific patient (with doctor and patient info)
-router.get("/patients/:id/appointments", ClinicController.getPatientAppointments);
+router.get(
+  "/patients/:id/appointments",
+  ClinicController.getPatientAppointments
+);
 
 // Get all services for a specific appointment
-router.get("/appointments/:id/services", ClinicController.getAppointmentServices);
+router.get(
+  "/appointments/:id/services",
+  ClinicController.getAppointmentServices
+);
 
 // Create new appointment with attached services
 router.post("/appointments", ClinicController.createAppointmentWithServices);
 
 // Get invoice detail for an appointment
-router.get("/appointments/:id/invoice", ClinicController.getInvoiceForAppointment);
+router.get(
+  "/appointments/:id/invoice",
+  ClinicController.getInvoiceForAppointment
+);
 
 // Update invoice status (e.g., paid, voided)
 router.put("/invoices/:id", ClinicController.updateInvoiceStatus);
@@ -24,6 +33,11 @@ router.post("/checkin", ClinicController.createCompleteCheckin);
 router.put("/appointments/:id/cancel", ClinicController.cancelAppointment);
 
 // Reschedule an appointment with updated services
-router.put("/appointments/:id/reschedule", ClinicController.rescheduleAppointment);
+router.put(
+  "/appointments/:id/reschedule",
+  ClinicController.rescheduleAppointment
+);
+
+router.get("/appointments/search", ClinicController.searchAppointments);
 
 module.exports = router;
