@@ -1,26 +1,41 @@
-const express = require('express');
-const cors = require('cors');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 8000;
+
 
 // Load Sequelize and models
-const db = require('./models');
-const clinicRoutes = require('./routes/clinicRoutes');
+const db = require("./models");
+
+// Route files
+const clinicRoutes = require("./routes/clinicRoutes");
+const authRoutes = require("./routes/auth.routes");
+// Using redis
+const rateLimiter = require("./middleware/rateLimiter");
+
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api/clinic', clinicRoutes);
+// Apply globally or per route per minute
+app.use(rateLimiter(30, 60));
 
-// Connect to DB
-db.sequelize.authenticate()
+// Routes
+app.use("/api/clinic", clinicRoutes);
+app.use("/api/auth", authRoutes);
+
+
+
+// DB Connection
+db.sequelize
+  .authenticate()
   .then(() => {
-    console.log('Database connection has been established successfully.');
+    console.log("Database connection has been established successfully.");
   })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
+  .catch((err) => {
+    console.error("Unable to connect to the database:", err);
   });
 
 // Start server

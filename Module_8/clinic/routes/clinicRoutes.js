@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const ClinicController = require("../controllers/ClinicController");
+const authMiddleware = require("../middleware/authMiddleware");
 
 // Get all appointments for a specific patient (with doctor and patient info)
 router.get(
   "/patients/:id/appointments",
+  authMiddleware,
   ClinicController.getPatientAppointments
 );
 
@@ -38,6 +40,12 @@ router.put(
   ClinicController.rescheduleAppointment
 );
 
-router.get("/appointments/search", ClinicController.searchAppointments);
+router.get(
+  "/appointments/search",
+  authMiddleware,
+  ClinicController.searchAppointments
+);
+
+router.get("/doctors", authMiddleware, ClinicController.getDoctors);
 
 module.exports = router;

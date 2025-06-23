@@ -8,8 +8,8 @@ const {
   Invoice,
   sequelize,
 } = require("../models");
-
 const { Op } = require("sequelize");
+const redis = require("../config/redis");
 
 module.exports = {
   async getPatientAppointments(req, res) {
@@ -19,10 +19,14 @@ module.exports = {
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
 
-      console.log("Patient ID:", id);
-
       if (!id || isNaN(Number(id))) {
         return res.status(400).json({ error: "Valid patient ID is required" });
+      }
+
+      const cacheKey = `appointments:patient:${id}:page:${page}:limit:${limit}`;
+      const cachedData = await redisClient.get(cacheKey);
+      if (cachedData) {
+        return res.json(JSON.parse(cachedData));
       }
 
       const { count, rows: appointments } = await Appointment.findAndCountAll({
@@ -46,12 +50,15 @@ module.exports = {
         offset,
       });
 
-      res.json({
+      const result = {
         total: count,
         page,
         totalPages: Math.ceil(count / limit),
         appointments,
-      });
+      };
+
+      await redisClient.setEx(cacheKey, 60, JSON.stringify(result));
+      res.json(result);
     } catch (err) {
       res.status(500).json({
         error: "Failed to retrieve patient appointments",
@@ -332,6 +339,38 @@ module.exports = {
     } catch (err) {
       res.status(500).json({
         error: "Failed to search appointments",
+        details: err.message,
+      });
+    }
+  },
+
+  async getDoctors(req, res) {
+    try {
+      const { specialty } = req.query;
+      const cacheKey = specialty
+        ? `doctors:specialty:${specialty.toLowerCase()}`
+        : `doctors:all`;
+
+      const cached = await redisClient.get(cacheKey);
+      if (cached) {
+        return res.json(JSON.parse(cached));
+      }
+
+      const where = { is_deleted: false };
+      if (specialty) {
+        where.specialty = { [Op.iLike]: `%${specialty}%` };
+      }
+
+      const doctors = await Doctor.findAll({
+        where,
+        attributes: ["id", "name", "specialty"],
+      });
+
+      await redisClient.setEx(cacheKey, 60, JSON.stringify(doctors)); // TTL 60s
+      res.json(doctors);
+    } catch (err) {
+      res.status(500).json({
+        error: "Failed to retrieve doctors",
         details: err.message,
       });
     }
