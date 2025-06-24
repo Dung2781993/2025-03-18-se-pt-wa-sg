@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visitor Counter App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="counter.js"></script>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div
+      class="bg-white p-8 rounded shadow max-w-sm w-full text-center space-y-6"
+    >
+      <h1 class="text-2xl font-bold text-blue-600">Visitor Counter</h1>
+
+      <div id="count" class="text-6xl font-bold text-gray-700">0</div>
+
+      <div id="message" class="text-red-600 font-semibold"></div>
+
+      <div class="flex justify-center gap-4 flex-wrap">
+        <button
+          onclick="increase()"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded w-24"
+        >
+          Add
+        </button>
+        <button
+          onclick="decrease()"
+          class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded w-24"
+        >
+          Minus
+        </button>
+        <button
+          onclick="reset()"
+          class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded w-24"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
