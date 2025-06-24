@@ -14,6 +14,7 @@ const redis = require("../config/redis");
 module.exports = {
   async getPatientAppointments(req, res) {
     try {
+      console.log("Fetching appointments for patient ID:", req.params.id);
       const { id } = req.params;
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
