@@ -8,8 +8,8 @@ const {
   Invoice,
   sequelize,
 } = require("../models");
-const { Op } = require("sequelize");
-const redis = require("../config/redis");
+const {  fn, col, Op } = require("sequelize");
+// const redis = require("../config/redis");
 
 module.exports = {
   async getPatientAppointments(req, res) {
@@ -24,11 +24,11 @@ module.exports = {
         return res.status(400).json({ error: "Valid patient ID is required" });
       }
 
-      const cacheKey = `appointments:patient:${id}:page:${page}:limit:${limit}`;
-      const cachedData = await redisClient.get(cacheKey);
-      if (cachedData) {
-        return res.json(JSON.parse(cachedData));
-      }
+      // const cacheKey = `appointments:patient:${id}:page:${page}:limit:${limit}`;
+      // const cachedData = await redisClient.get(cacheKey);
+      // if (cachedData) {
+      //   return res.json(JSON.parse(cachedData));
+      // }
 
       const { count, rows: appointments } = await Appointment.findAndCountAll({
         where: {
@@ -58,7 +58,7 @@ module.exports = {
         appointments,
       };
 
-      await redisClient.setEx(cacheKey, 60, JSON.stringify(result));
+      // await redisClient.setEx(cacheKey, 60, JSON.stringify(result));
       res.json(result);
     } catch (err) {
       res.status(500).json({
@@ -348,18 +348,18 @@ module.exports = {
   async getDoctors(req, res) {
     try {
       const { specialty } = req.query;
-      const cacheKey = specialty
-        ? `doctors:specialty:${specialty.toLowerCase()}`
-        : `doctors:all`;
+      // const cacheKey = specialty
+      //   ? `doctors:specialty:${specialty.toLowerCase()}`
+      //   : `doctors:all`;
 
-      const cached = await redisClient.get(cacheKey);
-      if (cached) {
-        return res.json(JSON.parse(cached));
-      }
+      // const cached = await redisClient.get(cacheKey);
+      // if (cached) {
+      //   return res.json(JSON.parse(cached));
+      // }
 
       const where = { is_deleted: false };
       if (specialty) {
-        where.specialty = { [Op.iLike]: `%${specialty}%` };
+        where.specialty = specialty.toLowerCase();
       }
 
       const doctors = await Doctor.findAll({
@@ -367,11 +367,69 @@ module.exports = {
         attributes: ["id", "name", "specialty"],
       });
 
-      await redisClient.setEx(cacheKey, 60, JSON.stringify(doctors)); // TTL 60s
+      // await redisClient.setEx(cacheKey, 60, JSON.stringify(doctors)); // TTL 60s
       res.json(doctors);
     } catch (err) {
       res.status(500).json({
         error: "Failed to retrieve doctors",
+        details: err.message,
+      });
+    }
+  },
+
+  async getDoctorTypeSpecialty(req, res) {
+    try {
+      const specialties = await Doctor.findAll({
+        where: { is_deleted: false },
+        attributes: [[fn("DISTINCT", col("specialty")), "specialty"]],
+        raw: true,
+      });
+      const result = specialties.map((s) => s.specialty);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({
+        error: "Failed to retrieve doctor specialties",
+        details: err.message,
+      });
+    }
+  },
+
+  async createNewDoctor(req, res) {
+    const { name, specialty, phone, email } = req.body;
+    try {
+      // Validate required fields and perform data sanitization
+      // Remove all whitespace from email and phone
+      // Validate existed special character 
+      // Avoid SQL injection or XSS attacks
+
+      const newDoctor = await Doctor.create({
+        name: name,
+        email: email,
+        phone: phone,
+        specialty: specialty,
+        is_deleted: false,
+      });
+      res.status(201).json({ message: "Doctor created", doctor_id: newDoctor.id });
+    } catch (err) {
+      res.status(500).json({
+        error: "Failed to create doctor",
+        details: err.message,
+      });
+    }
+  },
+  async updateDoctor(req, res) {
+    const { id } = req.params;
+    const { name, specialty, phone, email } = req.body;
+    try {
+
+      await Doctor.update(
+        { name, specialty, phone, email },
+        { where: { id } }
+      );
+      res.json({ message: "Doctor updated" });
+    } catch (err) {
+      res.status(500).json({
+        error: "Failed to update doctor",
         details: err.message,
       });
     }

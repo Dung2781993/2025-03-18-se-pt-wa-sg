@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // Apply globally or per route per minute
-app.use(rateLimiter(30, 60));
+// app.use(rateLimiter(30, 60));
 
 // Routes
 app.use("/api/clinic", clinicRoutes);

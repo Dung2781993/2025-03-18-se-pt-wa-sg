@@ -18,4 +18,7 @@ module.exports = {
     ClinicService.rescheduleAppointment(req, res),
   searchAppointments: (req, res) => ClinicService.searchAppointments(req, res),
   getDoctors: (req, res) => ClinicService.getDoctors(req, res),
+  getDoctorTypeSpecialty: (req, res) => ClinicService.getDoctorTypeSpecialty(req, res),
+  createNewDoctor: (req, res) => ClinicService.createNewDoctor(req, res),
+  updateDoctor: (req, res) => ClinicService.updateDoctor(req, res),
 };

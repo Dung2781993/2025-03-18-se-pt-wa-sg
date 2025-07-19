@@ -6,7 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 // Get all appointments for a specific patient (with doctor and patient info)
 router.get(
   "/patients/:id/appointments",
-  authMiddleware,
+  // authMiddleware,
   ClinicController.getPatientAppointments
 );
 
@@ -46,6 +46,28 @@ router.get(
   ClinicController.searchAppointments
 );
 
-router.get("/doctors", authMiddleware, ClinicController.getDoctors);
+router.get(
+  "/doctors",
+  // authMiddleware,
+  ClinicController.getDoctors
+);
+
+router.get(
+  "/doctors-type-specialty",
+  // authMiddleware,
+  ClinicController.getDoctorTypeSpecialty
+);
+
+router.post(
+  "/doctors",
+  // authMiddleware,
+  ClinicController.createNewDoctor
+);
+
+router.put(
+  "/doctor/:id",
+  // authMiddleware,
+  ClinicController.updateDoctor
+);
 
 module.exports = router;
